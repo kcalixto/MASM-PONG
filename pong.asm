@@ -5,6 +5,8 @@ STACK ENDS
 
 DATA SEGMENT PARA 'DATA'
 
+	TIME_AUX db 0 ; variable used when checking if the time has changed 
+
 	BALL_X dw 0Ah ; X position (column) of the ball 
 	BALL_Y dw 0Ah ; Y position (line) of the ball
 	BALL_SIZE dw 04h ; size of the ball (pixels in width and height)
@@ -36,7 +38,19 @@ CODE SEGMENT PARA 'CODE'
 		mov bl, 00h ; choose color
 		int 10h    ; executes
 	
-		call DRAW_BALL ; call procedure
+		CHECK_TIME:
+			mov ah, 2ch ; Function GetSystemTime code
+			int 21h     ; CH = hour CL = minute DH = second DL = 1/100 seconds
+		
+			cmp DL,TIME_AUX	; is the current time == previous one (TIME_AUX) ?
+			JE CHECK_TIME	; if its the same, check again
+			
+			;if it's different, then draw, move, etc.
+			mov TIME_AUX, DL ; update previous time
+			inc BALL_X
+			call DRAW_BALL ; call procedure
+			
+			JMP CHECK_TIME ; After everything, check time again
 	
 		RET ;ret = final de func 
 	MAIN ENDP
