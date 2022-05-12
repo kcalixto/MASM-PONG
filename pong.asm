@@ -5,6 +5,9 @@ STACK ENDS
 
 DATA SEGMENT PARA 'DATA'
 
+	WINDOW_WIDTH DW 140h ;; the width of the window (320px)
+	WINDOW_HEIGHT DW 0C8h ;; the height of the window (200px)
+
 	TIME_AUX db 0 ;; variable used when checking if the time has changed 
 
 	BALL_X dw 0Ah ;; X position (column) of the ball 
@@ -53,11 +56,39 @@ CODE SEGMENT PARA 'CODE'
 	
 	MOVE_BALL PROC NEAR
 		;; Incrementing our velocity
-		MOV AX, BALL_VELOCITY_X
-		ADD BALL_X, AX
+		MOV AX, BALL_VELOCITY_X 
+		ADD BALL_X, AX 		;; move the ball horizontally
+		
+								;;checking colision 
+		CMP BALL_X, 00h
+		JL NEG_VELOCITY_X  			;; if BALL_X < 0 (Y -> collided)
+									;; JL -> jump if is Less
+		MOV AX, WINDOW_WIDTH
+		CMP BALL_X, AX
+		JG NEG_VELOCITY_X 			;; if BALL_X > WINDOW_WIDTH Y -> collided)
+									;; JG -> jump if greater
+		
 		MOV AX, BALL_VELOCITY_Y
-		ADD BALL_Y, AX
+		ADD BALL_Y, AX 		;; move the ball vertically
+		
+								;;checking colision 
+		CMP BALL_Y, 00h
+		JL NEG_VELOCITY_Y  			;; BALL_Y < 0 (Y -> collided)
+									;; JL -> jump if is Less
+		MOV AX, WINDOW_HEIGHT
+		CMP BALL_Y, AX				;; BALL_Y > WINDOW_HEIGHT (Y -> collided)
+		JG NEG_VELOCITY_Y 			;; JG -> jump if greater	
+				
 		RET
+		
+		NEG_VELOCITY_X:
+			NEG BALL_VELOCITY_X ;;BALL_VELOCITY_X = !BALL_VELOCITY_X
+			RET
+			
+		NEG_VELOCITY_Y:
+			NEG BALL_VELOCITY_Y ;;BALL_VELOCITY_Y = !BALL_VELOCITY_Y
+			RET
+			
 	MOVE_BALL ENDP
 	
 	DRAW_BALL PROC NEAR
