@@ -7,6 +7,7 @@ DATA SEGMENT PARA 'DATA'
 
 	WINDOW_WIDTH DW 140h ;; the width of the window (320px)
 	WINDOW_HEIGHT DW 0C8h ;; the height of the window (200px)
+	WINDOW_BOUNDS DW 6		;; variable used to check colisions earlier
 
 	TIME_AUX db 0 ;; variable used when checking if the time has changed 
 
@@ -59,24 +60,30 @@ CODE SEGMENT PARA 'CODE'
 		MOV AX, BALL_VELOCITY_X 
 		ADD BALL_X, AX 		;; move the ball horizontally
 		
-								;;checking colision 
-		CMP BALL_X, 00h
-		JL NEG_VELOCITY_X  			;; if BALL_X < 0 (Y -> collided)
-									;; JL -> jump if is Less
-		MOV AX, WINDOW_WIDTH
-		CMP BALL_X, AX
-		JG NEG_VELOCITY_X 			;; if BALL_X > WINDOW_WIDTH Y -> collided)
-									;; JG -> jump if greater
+								;; checking colision 
+		MOV AX, WINDOW_BOUNDS	;; saving window_bounds to use later
+		CMP BALL_X, AX			;; Comparing agains our defined bounds (like a margin)
+		JL NEG_VELOCITY_X  		;; if BALL_X < 0 (Y -> collided)
+								;; JL -> jump if is Less
+		MOV AX, WINDOW_WIDTH	;; getting windows_width
+		SUB AX, BALL_SIZE		;; reducing ball_size in space
+		SUB AX, WINDOW_BOUNDS	;; reducing our margin
+		CMP BALL_X, AX			;; if BALL_X > WINDOW_WIDTH - BALL_SIZE - WINDOW_BOUNDS (X -> collided)
+		JG NEG_VELOCITY_X 		;; JG -> jump if greater
+									
 		
 		MOV AX, BALL_VELOCITY_Y
 		ADD BALL_Y, AX 		;; move the ball vertically
 		
 								;;checking colision 
-		CMP BALL_Y, 00h
+		MOV AX, WINDOW_BOUNDS
+		CMP BALL_Y, AX
 		JL NEG_VELOCITY_Y  			;; BALL_Y < 0 (Y -> collided)
 									;; JL -> jump if is Less
 		MOV AX, WINDOW_HEIGHT
-		CMP BALL_Y, AX				;; BALL_Y > WINDOW_HEIGHT (Y -> collided)
+		SUB AX, BALL_SIZE
+		SUB AX, WINDOW_BOUNDS
+		CMP BALL_Y, AX				;; BALL_Y > WINDOW_HEIGHT - BALL_SIZE - WINDOW_BOUNDS (Y -> collided)
 		JG NEG_VELOCITY_Y 			;; JG -> jump if greater	
 				
 		RET
