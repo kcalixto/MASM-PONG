@@ -11,7 +11,9 @@ DATA SEGMENT PARA 'DATA'
 
 	TIME_AUX db 0 ;; variable used when checking if the time has changed 
 
-	BALL_X dw 0Ah ;; X position (column) of the ball 
+	BALL_ORIGINAL_X DW 0A0h ;; middle of screen
+	BALL_ORIGINAL_Y DW 64h
+	BALL_X dw 0A0h ;; X position (column) of the ball 
 	BALL_Y dw 0Ah ;; Y position (line) of the ball
 	BALL_SIZE dw 04h ;; size of the ball (pixels in width and height)
 	BALL_VELOCITY_X DW 02H ;; X (horizontal) velocity of the ball
@@ -63,13 +65,13 @@ CODE SEGMENT PARA 'CODE'
 								;; checking colision 
 		MOV AX, WINDOW_BOUNDS	;; saving window_bounds to use later
 		CMP BALL_X, AX			;; Comparing agains our defined bounds (like a margin)
-		JL NEG_VELOCITY_X  		;; if BALL_X < 0 (Y -> collided)
+		JL RESET_POSITION  		;; if BALL_X < 0 (Y -> collided)
 								;; JL -> jump if is Less
 		MOV AX, WINDOW_WIDTH	;; getting windows_width
 		SUB AX, BALL_SIZE		;; reducing ball_size in space
 		SUB AX, WINDOW_BOUNDS	;; reducing our margin
 		CMP BALL_X, AX			;; if BALL_X > WINDOW_WIDTH - BALL_SIZE - WINDOW_BOUNDS (X -> collided)
-		JG NEG_VELOCITY_X 		;; JG -> jump if greater
+		JG RESET_POSITION 		;; JG -> jump if greater
 									
 		
 		MOV AX, BALL_VELOCITY_Y
@@ -88,6 +90,10 @@ CODE SEGMENT PARA 'CODE'
 				
 		RET
 		
+		RESET_POSITION:
+			CALL RESET_BALL_POSITION
+			RET
+		
 		NEG_VELOCITY_X:
 			NEG BALL_VELOCITY_X ;;BALL_VELOCITY_X = !BALL_VELOCITY_X
 			RET
@@ -97,6 +103,17 @@ CODE SEGMENT PARA 'CODE'
 			RET
 			
 	MOVE_BALL ENDP
+	
+	RESET_BALL_POSITION PROC NEAR
+		
+		MOV AX, BALL_ORIGINAL_X
+		MOV BALL_X, AX
+		
+		MOV AX, BALL_ORIGINAL_Y
+		MOV BALL_Y, AX
+		
+		RET
+	RESET_BALL_POSITION ENDP
 	
 	DRAW_BALL PROC NEAR
 		
