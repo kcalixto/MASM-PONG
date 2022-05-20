@@ -19,6 +19,15 @@ DATA SEGMENT PARA 'DATA'
 	BALL_VELOCITY_X DW 02H ;; X (horizontal) velocity of the ball
 	BALL_VELOCITY_Y DW 02H ;; Y (vertical) velocity of the ball
 
+	PADDLE_LEFT_X DW 0Ah
+	PADDLE_LEFT_Y DW 0Ah
+	
+	PADDLE_RIGHT_X DW 130h
+	PADDLE_RIGHT_Y DW 0Ah
+
+	PADDLE_WIDTH DW 05h
+	PADDLE_HEIGHT DW 1Fh
+
 DATA ENDS
 
 CODE SEGMENT PARA 'CODE'
@@ -49,8 +58,9 @@ CODE SEGMENT PARA 'CODE'
 			CALL CLEAR_SCREEN ;; clear screen procedure
 			
 			CALL MOVE_BALL ;; move ball procedure
-			
 			CALL DRAW_BALL ;; call procedure
+			
+			CALL DRAW_PADDLES
 			
 			JMP CHECK_TIME ;; After everything, check time again
 	
@@ -136,9 +146,9 @@ CODE SEGMENT PARA 'CODE'
 			
 			;; RESET CX
 			mov cx, BALL_X ;; cx register go back to the initial column (THIS CODE BLOCK ONLY RUNS IF JNG IS FALSE)
+			inc dx ;; advance one line ;increment dx
 			
 			;; INCREMENT LINES
-			inc dx ;; advance one line ;increment dx
 			mov ax, dx ;; dx - BALL_Y > BALL_SIZE (Y -> we exit this procedure, F -> we continue to the next line)
 			sub ax, BALL_Y
 			CMP ax, BALL_SIZE
@@ -146,6 +156,61 @@ CODE SEGMENT PARA 'CODE'
 		
 		RET
 	DRAW_BALL ENDP
+	
+	DRAW_PADDLES PROC NEAR
+		MOV CX, PADDLE_LEFT_X ;; set the initial column (X) to 10 
+		MOV DX, PADDLE_LEFT_Y ;; set the initial line (Y) to 10
+		
+		DRAW_PADDLE_LEFT_HORIZONTAL:
+			MOV AH, 0Ch ;; set the config to writing pixel
+			MOV AL, 0Fh ;; set the color 
+			MOV BH, 00h ;; set the page number
+			INT 10h 	;; execute
+			
+			INC CX 		;; cx = cx + 1 / Increment
+			MOV AX, CX	;; cx - PADDLE_LEFT_X > PADDLE_LEFT_WIDTH (Y - We go to the next line, F - We continue to the next column)
+			SUB AX, PADDLE_LEFT_X ;; subtraction
+			CMP AX, PADDLE_WIDTH ;; Compare
+			JNG DRAW_PADDLE_LEFT_HORIZONTAL ;; Jump if Not Greater
+		
+			;; RESET CX
+			MOV CX, PADDLE_LEFT_X ;; cx register go back to the initial column (THIS CODE BLOCK ONLY RUNS IF JNG IS FALSE)
+			INC DX ;; advance one line ;increment dx
+			
+			;; INCREMENT LINES
+			MOV AX, DX ;; dx - PADDLE_LEFT_Y > PADDLE_HEIGHT (Y -> we exit this procedure, F -> we continue to the next line)
+			SUB AX, PADDLE_LEFT_Y
+			CMP AX, PADDLE_HEIGHT
+			JNG DRAW_PADDLE_LEFT_HORIZONTAL
+		
+		;;right paddle
+		MOV CX, PADDLE_RIGHT_X ;; set the initial column (X) to 10 
+		MOV DX, PADDLE_RIGHT_Y ;; set the initial line (Y) to 10
+		
+		DRAW_PADDLE_RIGHT_HORIZONTAL:
+			MOV AH, 0Ch ;; set the config to writing pixel
+			MOV AL, 0Fh ;; set the color 
+			MOV BH, 00h ;; set the page number
+			INT 10h 	;; execute
+			
+			INC CX 		;; cx = cx + 1 / Increment
+			MOV AX, CX	;; cx - PADDLE_RIGHT_X > PADDLE_RIGHT_WIDTH (Y - We go to the next line, F - We continue to the next column)
+			SUB AX, PADDLE_RIGHT_X ;; subtraction
+			CMP AX, PADDLE_WIDTH ;; Compare
+			JNG DRAW_PADDLE_RIGHT_HORIZONTAL ;; Jump if Not Greater
+		
+			;; RESET CX
+			MOV CX, PADDLE_RIGHT_X ;; cx register go back to the initial column (THIS CODE BLOCK ONLY RUNS IF JNG IS FALSE)
+			INC DX ;; advance one line ;increment dx
+			
+			;; INCREMENT LINES
+			MOV AX, DX ;; dx - PADDLE_RIGHT_Y > PADDLE_HEIGHT (Y -> we exit this procedure, F -> we continue to the next line)
+			SUB AX, PADDLE_RIGHT_Y
+			CMP AX, PADDLE_HEIGHT
+			JNG DRAW_PADDLE_RIGHT_HORIZONTAL
+		
+		RET
+	DRAW_PADDLES ENDP
 	
 	CLEAR_SCREEN PROC NEAR
 		;; Painting the screen to black
