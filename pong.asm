@@ -60,6 +60,7 @@ CODE SEGMENT PARA 'CODE'
 			CALL MOVE_BALL ;; move ball procedure
 			CALL DRAW_BALL ;; call procedure
 			
+			CALL MOVE_PADDLES
 			CALL DRAW_PADDLES
 			
 			JMP CHECK_TIME ;; After everything, check time again
@@ -113,6 +114,53 @@ CODE SEGMENT PARA 'CODE'
 			RET
 			
 	MOVE_BALL ENDP
+	
+	MOVE_PADDLES PROC NEAR
+	
+		;;left paddle movement
+		
+		;;check if any key has been pressed(if not check the other paddle)
+		MOV AH, 01h ;; calling interruption to read keyboard press
+		INT 16h
+		JZ CHECK_RIGHT_PADDLE_MOVEMENT ;; IF = 1, JZ -> Jump if Zero
+		
+		;;check wich key is beeing pressed
+		
+		MOV AH, 00h ;; calling int to read key pressed
+		INT 16h
+		
+		;;if it is 'w' or 'W' move up
+		CMP AL, 57h ;; 57h = W in ASCI
+		JE MOVE_LEFT_PADDLE_UP ;; je -> jump if equal
+		CMP AL, 77h ;; 77h = w in ASCI
+		JE MOVE_LEFT_PADDLE_UP ;; je -> jump if equal
+		
+		;;if it is 's' or 'S' move down
+		
+		CMP AL, 53h ;; 53h = S in ASCI
+		JE MOVE_LEFT_PADDLE_DOWN ;; je -> jump if equal
+		CMP AL, 73h ;; 73h = s in ASCI
+		JE MOVE_LEFT_PADDLE_DOWN ;; je -> jump if equal
+		JMP CHECK_RIGHT_PADDLE_MOVEMENT
+		
+		MOVE_LEFT_PADDLE_UP:
+			
+			RET
+		;;
+		
+		;;right paddle movement
+	
+		;;check if any key has been pressed(if notexit procedure)
+		
+		;;check wich key is beeing pressed
+		
+		;;if it is 'o' or 'O' move up
+		
+		;;if it is 'l' or 'L' move down
+		
+	
+		RET
+	MOVE_PADDLES ENDP
 	
 	RESET_BALL_POSITION PROC NEAR
 		
